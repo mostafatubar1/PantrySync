@@ -34,3 +34,7 @@ const expiryDate = new Date(expiry);
 if (expiry && expiryDate < today) {
   item.style.border = "2px solid red";
 }
+
+item.addEventListener("click", function () {
+  item.remove();
+});
