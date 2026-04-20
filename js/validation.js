@@ -26,3 +26,11 @@ document.getElementById("add-btn").addEventListener("click", function () {
 
   targetZone.appendChild(item);
 });
+
+
+const today = new Date();
+const expiryDate = new Date(expiry);
+
+if (expiry && expiryDate < today) {
+  item.style.border = "2px solid red";
+}
