@@ -1,3 +1,10 @@
+window.onload = function () {
+  const saved = localStorage.getItem("pantryData");
+  if (saved) {
+    document.getElementById("app-shell").innerHTML = saved;
+  }
+};
+
 document.getElementById("add-btn").addEventListener("click", function () {
   const name = document.getElementById("food-search").value;
   const amount = document.getElementById("item-amount").value;
@@ -38,3 +45,5 @@ if (expiry && expiryDate < today) {
 item.addEventListener("click", function () {
   item.remove();
 });
+
+localStorage.setItem("pantryData", document.getElementById("app-shell").innerHTML);
