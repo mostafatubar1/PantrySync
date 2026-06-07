@@ -1,9 +1,9 @@
 <%- include('partials/header') %>
 
-<% const zeroWasteScore = items.length ? Math.max(20, Math.round(((items.length - expiringSoon) / items.length) * 100)) : 100; %>
+<% const zeroWasteScore = total ? Math.max(20, Math.round(((total - expiringSoon) / total) * 100)) : 100; %>
 <% const estimatedSavings = Math.max(expiringSoon, 1) * 25; %>
 
-=<section class="page-head">
+<section class="page-head">
     <div>
         <p class="eyebrow"><%= currentUser.name %></p>
         <h1>My Pantry</h1>
@@ -15,10 +15,10 @@
     </div>
 </section>
 
-=<section class="stats summary-cards">
+<section class="stats summary-cards">
     <div class="stat">
         <span class="stat-icon">🥫</span>
-        <strong><%= items.length %></strong>
+        <strong><%= total %></strong>
         <span>Total Items</span>
     </div>
     <div class="stat urgent">
@@ -27,9 +27,9 @@
         <span>Expiring Soon</span>
     </div>
     <div class="stat">
-        <span class="stat-icon">🥗</span>
-        <strong><%= grouped.expired.length %></strong>
-        <span>Expired Items</span>
+        <span class="stat-icon">🍳</span>
+        <strong><%= recommendedRecipes %></strong>
+        <span>Recommended Recipes</span>
     </div>
     <div class="stat savings">
         <span class="stat-icon">EGP</span>
@@ -40,7 +40,6 @@
 
 <section class="grid two">
 
-    <!-- Add Item Form -->
     <form class="panel" action="/items" method="post" data-validate>
         <div class="panel-heading">
             <span class="panel-icon">+</span>
@@ -82,7 +81,7 @@
         <label>Zone</label>
         <select name="zone">
             <% zones.forEach(zone => { %>
-                <option value="<%= zone %>"><%= zone.charAt(0).toUpperCase() + zone.slice(1) %></option>
+                <option value="<%= zone %>"><%= zoneLabels[zone] %></option>
             <% }) %>
         </select>
 
@@ -150,10 +149,9 @@
             <p class="eyebrow">Expiry Priority</p>
             <h2>Items</h2>
         </div>
-        <span class="page-chip"><%= items.length %> Items</span>
+        <span class="page-chip">Page <%= page %> of <%= pages %></span>
     </div>
 
-    <!-- Empty State -->
     <% if (!items.length) { %>
         <div class="empty-state">
             <span class="empty-mark"></span>
@@ -162,11 +160,10 @@
         </div>
     <% } %>
 
-    <!-- Items Grouped by Zone -->
     <% zones.forEach(zone => { %>
         <% const zoneItems = items.filter(item => item.zone === zone); %>
         <% if (zoneItems.length) { %>
-            <h3 class="zone-heading"><%= zone.charAt(0).toUpperCase() + zone.slice(1) %></h3>
+            <h3 class="zone-heading"><%= zoneLabels[zone] %></h3>
             <div class="grid items-grid">
                 <% zoneItems.forEach(item => { %>
                     <%
@@ -181,7 +178,7 @@
                         const priorityText = days < 0 ? 'Expired' : days <= 3 ? 'Use First' : 'Safe';
                     %>
                     <article class="item-card <%= expiryClass %>" data-item-card="<%= item._id %>">
-                        <div class="item-emoji"><%= emojiFood(item.name, item.zone) %></div>
+                        <div class="item-emoji"><%= emojiForItem(item.name, item.zone) %></div>
                         <div class="item-main">
                             <div class="item-title-row">
                                 <h3><%= item.name %></h3>
@@ -195,7 +192,6 @@
                             <% } %>
                         </div>
 
-                        <!-- Edit Form -->
                         <details>
                             <summary>Edit</summary>
                             <form action="/items/<%= item._id %>/update" method="post" data-validate>
@@ -226,7 +222,7 @@
                                 <label>Zone</label>
                                 <select name="zone">
                                     <% zones.forEach(z => { %>
-                                        <option value="<%= z %>" <%= item.zone === z ? 'selected' : '' %>><%= z.charAt(0).toUpperCase() + z.slice(1) %></option>
+                                        <option value="<%= z %>" <%= item.zone === z ? 'selected' : '' %>><%= zoneLabels[z] %></option>
                                     <% }) %>
                                 </select>
                                 <label>Cost</label>
@@ -243,6 +239,16 @@
             </div>
         <% } %>
     <% }) %>
+
+    <div class="pagination">
+        <% if (page > 1) { %>
+            <a class="button" href="/dashboard?page=<%= page - 1 %>&limit=<%= limit %>">Previous</a>
+        <% } %>
+        <span class="button page-indicator">Page <%= page %> of <%= pages %></span>
+        <% if (page < pages) { %>
+            <a class="button" href="/dashboard?page=<%= page + 1 %>&limit=<%= limit %>">Next</a>
+        <% } %>
+    </div>
 
 </section>
 

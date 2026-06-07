@@ -4,13 +4,13 @@ const { recommendationRows } = require('./recipeController');
 const foods = require('../data/foods.json');
 
 const zoneLabels = {
-    'zone-fridge': 'Fridge',
-    'zone-top': 'Freezer',
-    'zone-middle': 'Middle Shelf',
-    'zone-bottom': 'Bottom Shelf',
-    'zone-veg': 'Vegetables',
-    'zone-fruit': 'Fruits',
-    'zone-pantry': 'Pantry'
+    fridge:  'Fridge',
+    top:     'Freezer',
+    middle:  'Middle Shelf',
+    bottom:  'Bottom Shelf',
+    veg:     'Vegetables',
+    fruit:   'Fruits',
+    pantry:  'Pantry'
 };
 
 const commonFoods = [
@@ -57,7 +57,8 @@ function validateItem(body, partial = false) {
     }
 
     if (body.unit !== undefined) data.unit = Item.units.includes(body.unit) ? body.unit : 'pcs';
-    if (body.zone !== undefined) data.zone = Item.zones.includes(body.zone) ? body.zone : 'zone-middle';
+    if (body.zone !== undefined) data.zone = Item.zones.includes(body.zone) ? body.zone : 'pantry';
+    if (body.category !== undefined) data.category = Item.categories.includes(body.category) ? body.category : 'other';
     if (body.notes !== undefined) data.notes = String(body.notes || '').trim();
     if (body.price !== undefined && body.price !== '') {
         data.price = Number(body.price);
@@ -67,15 +68,14 @@ function validateItem(body, partial = false) {
     return data;
 }
 
-
 function emojiForItem(name, zone) {
     const text = String(name || '').toLowerCase();
     if (text.includes('chicken') || text.includes('beef') || text.includes('fish') || text.includes('tuna')) return '🥩';
     if (text.includes('milk') || text.includes('cheese') || text.includes('yogurt')) return '🥛';
     if (text.includes('rice') || text.includes('pasta') || text.includes('bread') || text.includes('flour')) return '🍞';
-    if (text.includes('apple') || text.includes('banana') || text.includes('orange') || zone === 'zone-fruit') return '🍎';
-    if (text.includes('tomato') || text.includes('onion') || text.includes('carrot') || zone === 'zone-veg') return '🥕';
-    if (zone === 'zone-pantry') return '🥫';
+    if (text.includes('apple') || text.includes('banana') || text.includes('orange') || zone === 'fruit') return '🍎';
+    if (text.includes('tomato') || text.includes('onion') || text.includes('carrot') || zone === 'veg') return '🥕';
+    if (zone === 'pantry') return '🥫';
     return '🍽️';
 }
 
@@ -88,13 +88,18 @@ exports.dashboard = async (req, res, next) => {
     try {
         const { page, limit, skip } = pageOptions(req.query);
         const filter = { owner: req.user._id };
+
         const [items, total] = await Promise.all([
             Item.find(filter).sort('expiryDate').skip(skip).limit(limit),
             Item.countDocuments(filter)
         ]);
-        const expiringSoon = await Item.countDocuments({ owner: req.user._id, expiryDate: { $lte: daysFromNow(3) } });
-        let recommendedRecipes = 0;
 
+        const expiringSoon = await Item.countDocuments({
+            owner: req.user._id,
+            expiryDate: { $lte: daysFromNow(3) }
+        });
+
+        let recommendedRecipes = 0;
         try {
             const recommendations = await recommendationRows(req.user, { page: 1, limit: 1 });
             recommendedRecipes = recommendations.total;
@@ -114,6 +119,7 @@ exports.dashboard = async (req, res, next) => {
             zones: Item.zones,
             zoneLabels,
             units: Item.units,
+            categories: Item.categories,
             emojiForItem,
             diets: req.user.constructor.diets
         });
@@ -135,7 +141,6 @@ exports.create = async (req, res, next) => {
 exports.update = async (req, res, next) => {
     try {
         const data = validateItem(req.body, true);
-
         const item = await Item.findOneAndUpdate(
             { _id: req.params.id, owner: req.user._id },
             data,
@@ -152,13 +157,14 @@ exports.remove = async (req, res, next) => {
     try {
         const item = await Item.findOneAndDelete({ _id: req.params.id, owner: req.user._id });
         if (!item) throw fail(404, 'Item not found.');
-        if (req.path.startsWith('/api') || req.xhr || (req.headers.accept || '').includes('application/json')) return res.json({ message: 'Deleted' });
+        if (req.path.startsWith('/api') || req.xhr || (req.headers.accept || '').includes('application/json')) {
+            return res.json({ message: 'Deleted' });
+        }
         res.redirect('/dashboard');
     } catch (err) {
         next(err);
     }
 };
-
 
 exports.foods = (req, res) => {
     const query = String(req.query.q || '').trim().toLowerCase();
