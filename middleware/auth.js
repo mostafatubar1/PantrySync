@@ -1,47 +1,43 @@
 const User = require('../models/user');
 
-function fail(status, message) {
-    return Object.assign(new Error(message), { status });
-}
-
-function wantsJson(req) {
-    return req.path.startsWith('/api') || req.xhr || (req.headers.accept || '').includes('application/json');
-}
-
 async function loadUser(req, res, next) {
-    try {
-        res.locals.currentUser = null;
-        if (!req.session.userId) return next();
-
-        const user = await User.findById(req.session.userId);
-        if (!user) {
-            req.session.destroy(() => {});
-            return next();
+    if (req.session && req.session.userId) {
+        try {
+            const user = await User.findById(req.session.userId);
+            if (user) {
+                req.user = user;
+                res.locals.user = user;
+            }
+        } catch (err) {
+            console.log(err);
         }
-
-        req.user = user;
-        res.locals.currentUser = user.safe();
-        next();
-    } catch (err) {
-        next(err);
     }
+    next();
 }
 
-function protect(req, res, next) {
+function requireLogin(req, res, next) {
     if (req.user) return next();
-    if (wantsJson(req)) return res.status(401).json({ message: 'Please log in first.' });
     res.redirect('/login');
 }
 
-function guestOnly(req, res, next) {
-    if (!req.user) return next();
-    res.redirect(req.user.role === 'admin' ? '/admin' : '/dashboard');
+function requireGuest(req, res, next) {
+    if (req.user) return res.redirect('/dashboard');
+    next();
 }
 
-function adminOnly(req, res, next) {
-    if (req.user && req.user.role === 'admin') return next();
-    if (wantsJson(req)) return res.status(403).json({ message: 'Admin access only.' });
-    res.status(403).render('error', { title: 'Admin Access', status: 403, message: 'Admin access only.' });
+function requireAdmin(req, res, next) {
+    if (req.user && req.user.isAdmin) return next();
+    res.status(403).send('Admin only');
 }
 
-module.exports = { fail, loadUser, protect, guestOnly, adminOnly, wantsJson };
+function wantsJson(req) {
+    return req.xhr || (req.headers.accept && req.headers.accept.includes('application/json'));
+}
+
+function fail(status, message) {
+    const err = new Error(message);
+    err.status = status;
+    return err;
+}
+
+module.exports = { loadUser, requireLogin, requireGuest, requireAdmin, wantsJson, fail };
