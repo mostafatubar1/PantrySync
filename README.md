@@ -4,7 +4,7 @@ PantrySync is an Express, EJS, MongoDB, and session-based MVC web app for pantry
 
 ## Team Responsibilities
 
-- Mostafa: recipe recommendation system, final integration, rewrite/copy-risk review, README and test reporting.
+- Mostafa: recipe recommendation system, final integration.
 - Aly: pantry dashboard and pantry item CRUD.
 - Lynne: authentication, sessions, registration/login, profile image upload.
 - Theodore: shopping list and recipe-to-shopping integration.
