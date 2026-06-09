@@ -1,0 +1,136 @@
+<%- include('partials/header') %>
+
+<section class="page-head admin-head">
+    <div>
+        <p class="eyebrow"><%= t.nav.admin %></p>
+        <h1>System Dashboard</h1>
+        <p class="lead">Manage users and pantry items across the platform.</p>
+    </div>
+    <button class="button" type="button" data-admin-refresh>Refresh</button>
+</section>
+
+<section class="admin-stats">
+    <article class="panel">
+        <span>Users</span>
+        <strong><%= stats.users %></strong>
+    </article>
+    <article class="panel">
+        <span>Admins</span>
+        <strong><%= stats.admins %></strong>
+    </article>
+    <article class="panel">
+        <span>Pantry Items</span>
+        <strong><%= stats.pantryItems %></strong>
+    </article>
+    <article class="panel">
+        <span>Recipes</span>
+        <strong><%= stats.recipes %></strong>
+    </article>
+    <article class="panel">
+        <span>Shopping Items</span>
+        <strong><%= stats.shoppingItems %></strong>
+    </article>
+    <article class="panel">
+        <span>Unbought</span>
+        <strong><%= stats.unboughtShoppingItems %></strong>
+    </article>
+</section>
+
+<section class="grid two admin-tables">
+    <article class="panel">
+        <h2>Users</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th><%= t.fields.username %></th>
+                    <th><%= t.fields.email %></th>
+                    <th>Admin</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% recent.users.forEach(function(row) { %>
+                    <tr>
+                        <td><%= row.username %></td>
+                        <td><%= row.email %></td>
+                        <td data-admin-status><%= row.isAdmin ? 'Yes' : 'No' %></td>
+                        <td>
+                            <button class="button button--small" data-toggle-admin="<%= row._id %>">
+                                <%= row.isAdmin ? 'Remove Admin' : 'Make Admin' %>
+                            </button>
+                            <button class="button button--small button--danger" data-delete-user="<%= row._id %>">Delete</button>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </article>
+
+    <article class="panel">
+        <h2>Pantry Items</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th><%= t.fields.name %></th>
+                    <th>Owner</th>
+                    <th><%= t.fields.zone %></th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% recent.pantryItems.forEach(function(row) { %>
+                    <tr>
+                        <td><%= row.name %></td>
+                        <td><%= row.owner ? row.owner.email : 'Unknown' %></td>
+                        <td><%= row.zone %></td>
+                        <td>
+                            <button class="button button--small button--danger" data-delete-item="<%= row._id %>">Delete</button>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </article>
+
+    <article class="panel">
+        <h2>Recent Recipes</h2>
+        <table>
+            <thead>
+                <tr><th>Title</th><th>Time</th><th>Cost</th></tr>
+            </thead>
+            <tbody>
+                <% recent.recipes.forEach(function(row) { %>
+                    <tr>
+                        <td><%= row.title %></td>
+                        <td><%= row.preparationTimeMinutes %> min</td>
+                        <td>EGP <%= row.estimatedCost || 0 %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </article>
+
+    <article class="panel">
+        <h2>Recent Shopping Items</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th><%= t.fields.name %></th>
+                    <th>Owner</th>
+                    <th><%= t.shopping.bought %></th>
+                </tr>
+            </thead>
+            <tbody>
+                <% recent.shoppingItems.forEach(function(row) { %>
+                    <tr>
+                        <td><%= row.name %></td>
+                        <td><%= row.owner ? row.owner.email : 'Unknown' %></td>
+                        <td><%= row.bought ? 'Yes' : 'No' %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </article>
+</section>
+
+<%- include('partials/footer') %>
