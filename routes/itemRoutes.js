@@ -1,16 +1,18 @@
 const router = require('express').Router();
 const itemController = require('../controllers/itemController');
-const { protect } = require('../middleware/auth');
+const { requireLogin } = require('../middleware/auth');
 
-router.get('/dashboard', protect, itemController.dashboard);
+router.get('/dashboard', requireLogin, itemController.renderDashboard);
 
-router.post('/items',protect, itemController.create);
-router.post('/items/:id/update', protect, itemController.update);
-router.post('/items/:id/delete', protect, itemController.remove);
+router.get('/api/items', requireLogin, itemController.getItems);
+router.post('/api/items', requireLogin, itemController.createItem);
+router.put('/api/items/:id', requireLogin, itemController.updateItem);
+router.patch('/api/items/:id', requireLogin, itemController.updateItem);
+router.delete('/api/items/:id', requireLogin, itemController.deleteItem);
+router.get('/api/foods', requireLogin, itemController.getFoodSuggestions);
 
-router.put('/api/items/:id',    protect, itemController.update);
-router.delete('/api/items/:id', protect, itemController.remove);
-
-router.get('/api/foods', protect, itemController.foods);
+router.post('/items', requireLogin, itemController.createItem);
+router.post('/items/:id/update', requireLogin, itemController.updateItem);
+router.post('/items/:id/delete', requireLogin, itemController.deleteItem);
 
 module.exports = router;

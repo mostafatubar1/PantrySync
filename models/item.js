@@ -1,24 +1,61 @@
 const mongoose = require('mongoose');
-const { Schema } = mongoose;
 
-const categories = ['dairy', 'meat', 'vegetables', 'fruits', 'grains', 'beverages', 'snacks', 'other'];
-const zones = ['fridge', 'top', 'middle', 'bottom', 'veg', 'fruit', 'pantry'];
-const units = ['pcs', 'g', 'kg', 'ml', 'liter', 'pack', 'cup', 'tbsp'];
+const zones = ['fridge', 'pantry', 'freezer'];
+const categories = ['produce', 'protein', 'dairy', 'grain', 'bakery', 'canned', 'frozen', 'spice', 'other'];
+const units = ['pcs', 'g', 'kg', 'ml', 'l', 'pack', 'cup', 'tbsp', 'tsp'];
 
-const itemSchema = new Schema({
-    owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    name: { type: String, required: [true, 'Name is required'], trim: true },
-    category: { type: String, enum: categories, default: 'other' },
-    amount: { type: Number, required: [true, 'Amount is required'], min: 0 },
-    unit: { type: String, enum: units, default: 'pcs' },
-    expiryDate: { type: Date, required: [true, 'Expiry date is required'] },
-    zone: { type: String, enum: zones, default: 'pantry' },
-    notes: { type: String, default: '', trim: true },
-    price: { type: Number, default: 0, min: 0 }
+const itemSchema = new mongoose.Schema({
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+        index: true
+    },
+    name: {
+        type: String,
+        required: true,
+        trim: true,
+        maxlength: 80
+    },
+    amount: {
+        type: Number,
+        required: true,
+        min: 0
+    },
+    unit: {
+        type: String,
+        enum: units,
+        default: 'pcs'
+    },
+    expiryDate: {
+        type: Date,
+        default: null
+    },
+    category: {
+        type: String,
+        enum: categories,
+        default: 'other'
+    },
+    zone: {
+        type: String,
+        enum: zones,
+        default: 'pantry'
+    },
+    price: {
+        type: Number,
+        min: 0,
+        default: 0
+    },
+    notes: {
+        type: String,
+        trim: true,
+        maxlength: 300,
+        default: ''
+    }
 }, { timestamps: true });
 
 itemSchema.statics.zones = zones;
-itemSchema.statics.units = units;
 itemSchema.statics.categories = categories;
+itemSchema.statics.units = units;
 
 module.exports = mongoose.model('Item', itemSchema);
