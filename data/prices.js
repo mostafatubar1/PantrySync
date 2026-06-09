@@ -1,5 +1,5 @@
 const prices = {
-  milk: 25,
+  milk: 55,
   eggs: 30,
   bread: 15,
   butter: 40,
@@ -19,7 +19,7 @@ const prices = {
   carrots: 10,
   apple: 20,
   apples: 20,
-  banana: 15,
+  banana: 35,
   bananas: 15,
   orange: 18,
   oranges: 18,
@@ -51,6 +51,7 @@ const prices = {
   capsicum: 12,
   mushrooms: 25,
   broccoli: 20,
+  strawberries: 30,
 };
 
 module.exports = prices;
